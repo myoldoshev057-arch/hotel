@@ -6,16 +6,52 @@ const rateLimit    = require('express-rate-limit');
 const path         = require('path');
 const { v4: uuidv4 } = require('uuid');
 const Database     = require('better-sqlite3');
-const axios        = require('axios');
+const TelegramBot  = require('node-telegram-bot-api'); // BOT UCHUN KUTUBXONA
 const fs           = require('fs');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-// SIZNING BOT TOKENINGIZ
+// SIZNING BOT TOKENINGIZ VA ID RAQAMINGIZ
 const BOT_TOKEN = '8762173444:AAFKaXkIezMwVAXf1ezOnM-Of_1ZWRCqzlU';
-// SIZNING TELEGRAM ID'INGIZ (Shu ID ni @userinfobot dan bilib olib, yozing. Hozircha bo'sh qoldiraman)
-const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID || 'SIZNING_TELEGRAM_ID'; 
+const ADMIN_CHAT_ID = '6612990282'; 
+
+// Botni ishga tushirish (Polling rejimida, ya'ni xabarlarni doim kutadi)
+const bot = new TelegramBot(BOT_TOKEN, { polling: true });
+
+// BOTGA /start BOSILGANDA NIMA BO'LISHI
+bot.onText(/\/start/, (msg) => {
+  const chatId = msg.chat.id;
+  const welcomeText = `
+✨ <b>AURUM Luxury Hotel'ga Xush kelibsiz!</b>
+
+Toshkent markazidagi eng hashamatli mehmonxona.
+Xonani band qilish va xizmatlarimiz bilan tanishish uchun quyidagi tugmani bosing 👇
+  `;
+  const opts = {
+    parse_mode: 'HTML',
+    reply_markup: {
+      inline_keyboard: [
+        // NETLIFY LINKINGIZNI SHU YERGA QO'YASIZ
+        [{ text: "🏨 Xona Band Qilish (Web App)", web_app: { url: "https://hotel12321.netlify.app" } }]
+      ]
+    }
+  };
+  bot.sendMessage(chatId, welcomeText, opts);
+});
+
+// ADMIN TASDIQLASH/BEKOR QILISH TUGMASINI BOSGANDA
+bot.on('callback_query', (query) => {
+  const action = query.data;
+  const chatId = query.message.chat.id;
+  
+  if(action.startsWith('confirm_')) {
+    bot.editMessageText("✅ Bron muvaffaqiyatli TASDIQLANDI.", { chat_id: chatId, message_id: query.message.message_id });
+  } else if(action.startsWith('cancel_')) {
+    bot.editMessageText("❌ Bron BEKOR QILINDI.", { chat_id: chatId, message_id: query.message.message_id });
+  }
+});
+
 
 // ── Database ─────────────────────────────────────────────────────────────────
 const DB_PATH = process.env.DB_PATH || './db/aurum.sqlite';
@@ -35,7 +71,7 @@ db.exec(`
 
 // ── Middleware ────────────────────────────────────────────────────────────────
 app.use(helmet());
-app.use(cors({ origin: '*', credentials: true })); // Hamma domen ruxsat etilgan
+app.use(cors({ origin: '*', credentials: true })); 
 app.use(express.json());
 
 const ROOM_PRICES = { deluxe_king: 280, luxury_twin: 420, presidential: 1200, royal_penthouse: 2500 };
@@ -46,48 +82,41 @@ function calcNights(checkIn, checkOut) {
   return Math.max(1, Math.round(ms / (1000 * 60 * 60 * 24)));
 }
 
-// ── Telegram Notification ─────────────────────────────────────────────────────
-async function sendTelegramMsg(chatId, text, buttons = null) {
-  try {
-    const payload = { chat_id: chatId, text: text, parse_mode: 'HTML' };
-    if (buttons) payload.reply_markup = { inline_keyboard: buttons };
-    await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, payload);
-  } catch (e) { console.error('TG Xatolik:', e.message); }
-}
-
 async function handleNewBooking(booking) {
   const nights = calcNights(booking.check_in, booking.check_out);
   const roomName = ROOM_NAMES[booking.room_type];
   
-  // 1. Adminga xabar (Mehmonxona egasiga)
+  // 1. SIZGA (ADMINGA) KELADIGAN XABAR
   const adminMsg = `
 🔔 <b>YANGI VIP BRON</b>
 
-👤 <b>Mijoz:</b> ${booking.first_name} ${booking.last_name}
+👤 <b>Mijoz:</b> ${booking.first_name}
 📞 <b>Tel:</b> ${booking.phone}
 🛏 <b>Xona:</b> ${roomName}
 📅 <b>Sana:</b> ${booking.check_in} ➡️ ${booking.check_out} (${nights} kecha)
 💰 <b>Jami tushum:</b> $${booking.total_price}
 📝 <b>Istak:</b> ${booking.special_requests || 'Yo\'q'}
   `;
-  await sendTelegramMsg(ADMIN_CHAT_ID, adminMsg, [
-    [{ text: "✅ Tasdiqlash", callback_data: `confirm_${booking.id}` }, { text: "❌ Bekor qilish", callback_data: `cancel_${booking.id}` }]
-  ]);
+  
+  const opts = {
+    parse_mode: 'HTML',
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: "✅ Tasdiqlash", callback_data: `confirm_${booking.id}` }, { text: "❌ Bekor qilish", callback_data: `cancel_${booking.id}` }]
+      ]
+    }
+  };
+  
+  try {
+    await bot.sendMessage(ADMIN_CHAT_ID, adminMsg, opts);
+  } catch (e) { console.error("Adminga xabar yuborishda xato:", e.message); }
 
-  // 2. Mijozning o'ziga xabar (Agar u bot orqali kirgan bo'lsa va tg_id bor bo'lsa)
+  // 2. MIJOZGA KELADIGAN XABAR
   if (booking.tg_id) {
-    const clientMsg = `
-Hurmatli <b>${booking.first_name}</b>,
-
-Sizning <b>${roomName}</b> uchun buyurtmangiz qabul qilindi.
-💰 Jami to'lov: <b>$${booking.total_price}</b>.
-
-<i>Iltimos, xonani to'liq band qilish uchun oldindan to'lovni (Payme/Click) amalga oshiring yoki menejer qo'ng'irog'ini kuting.</i>
-    `;
-    // Click yoki Payme linki shu yerga ulanishi mumkin
-    await sendTelegramMsg(booking.tg_id, clientMsg, [
-      [{ text: "💳 Payme orqali to'lash", url: "https://payme.uz" }] 
-    ]);
+    const clientMsg = `Hurmatli <b>${booking.first_name}</b>, sizning <b>${roomName}</b> uchun buyurtmangiz qabul qilindi.\n\n💰 Jami to'lov: <b>$${booking.total_price}</b>.\n<i>Menejerimiz tez orada aloqaga chiqadi.</i>`;
+    try {
+      await bot.sendMessage(booking.tg_id, clientMsg, { parse_mode: 'HTML' });
+    } catch (e) { /* Ignore */ }
   }
 }
 
@@ -104,7 +133,7 @@ app.post('/api/bookings', async (req, res) => {
     `);
 
     try {
-      insert.run(id, data.tg_id || '', data.first_name, data.last_name, data.email, data.phone, data.check_in, data.check_out, data.room_type, data.guests || 1, data.special_requests || '', total_price);
+      insert.run(id, data.tg_id || '', data.first_name, data.last_name || '', data.email || '', data.phone, data.check_in, data.check_out, data.room_type, data.guests || 1, data.special_requests || '', total_price);
       
       const newBooking = { id, ...data, total_price };
       setImmediate(() => handleNewBooking(newBooking));
@@ -114,12 +143,6 @@ app.post('/api/bookings', async (req, res) => {
       console.error(e);
       res.status(500).json({ success: false, message: 'Server xatoligi' });
     }
-});
-
-// Bot uchun oddiy Webhook qabul qilgich (Tasdiqlash tugmalari ishlashi uchun)
-app.post('/bot-webhook', async (req, res) => {
-  // Bu qismda siz botdagi "Tasdiqlash" tugmasi bosilganda nima bo'lishini yozasiz
-  res.sendStatus(200);
 });
 
 app.listen(PORT, () => { console.log(`Backend ishga tushdi: http://localhost:${PORT}`); });
