@@ -8,124 +8,52 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <style>
-/* ═══════════════════════════════════════
-   PREMIUM DESIGN TOKENS & EFFECTS
-═══════════════════════════════════════ */
+/* ... (Dizayn o'zgarmadi, hamma chiroyli effektlar saqlab qolindi) ... */
 :root {
-  --gold: #D4AF37;
-  --gold-dark: #AA8B2C;
-  --gold-glow: rgba(212, 175, 55, 0.15);
-  
-  /* LIGHT THEME */
-  --bg-main: #f4f1ea;
-  --bg-card: rgba(255, 255, 255, 0.85);
-  --text-main: #1a1a1a;
-  --text-muted: #666666;
-  --border-color: rgba(212, 175, 55, 0.3);
-  --modal-overlay: rgba(0,0,0,0.4);
+  --gold: #D4AF37; --gold-dark: #AA8B2C; --gold-glow: rgba(212, 175, 55, 0.15);
+  --bg-main: #f4f1ea; --bg-card: rgba(255, 255, 255, 0.85); --text-main: #1a1a1a;
+  --text-muted: #666666; --border-color: rgba(212, 175, 55, 0.3); --modal-overlay: rgba(0,0,0,0.4);
   --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
-
 body.dark-mode {
-  --bg-main: #0a0a0a;
-  --bg-card: rgba(20, 20, 20, 0.85);
-  --text-main: #ffffff;
-  --text-muted: #a0a0a0;
-  --border-color: rgba(212, 175, 55, 0.2);
-  --modal-overlay: rgba(0,0,0,0.8);
+  --bg-main: #0a0a0a; --bg-card: rgba(20, 20, 20, 0.85); --text-main: #ffffff;
+  --text-muted: #a0a0a0; --border-color: rgba(212, 175, 55, 0.2); --modal-overlay: rgba(0,0,0,0.8);
 }
-
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-/* PREMIUM BACKGROUND EFFECTS */
 body {
-  font-family: 'Montserrat', sans-serif;
-  background-color: var(--bg-main);
-  color: var(--text-main);
-  line-height: 1.6;
-  transition: background-color 0.5s ease;
-  min-height: 100vh;
-  /* Glow Effect */
-  background-image: 
-    radial-gradient(circle at 15% 50px, var(--gold-glow), transparent 25%),
-    radial-gradient(circle at 85% 30%, var(--gold-glow), transparent 25%);
+  font-family: 'Montserrat', sans-serif; background-color: var(--bg-main); color: var(--text-main);
+  line-height: 1.6; transition: background-color 0.5s ease; min-height: 100vh;
+  background-image: radial-gradient(circle at 15% 50px, var(--gold-glow), transparent 25%), radial-gradient(circle at 85% 30%, var(--gold-glow), transparent 25%);
   background-attachment: fixed;
 }
-
-/* Noise/Grain Texture */
 body::after {
   content: ""; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
   pointer-events: none; z-index: 9999; opacity: 0.6;
 }
-
 h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 500; }
-
-/* ═══════════════════════════════════════
-   GLASSMORPHISM CARDS (Shisha effekti)
-═══════════════════════════════════════ */
-.header {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 1.5rem; 
-  background: var(--bg-card);
-  backdrop-filter: blur(12px); 
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border-color);
-  position: sticky; top: 0; z-index: 50;
-}
+.header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; background: var(--bg-card); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 50; }
 .logo-mini { font-size: 1.5rem; letter-spacing: 3px; font-family: 'Playfair Display', serif; }
-.theme-toggle {
-  background: transparent; border: 1px solid var(--border-color);
-  color: var(--text-main); width: 35px; height: 35px; border-radius: 50%;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-}
-
+.theme-toggle { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); width: 35px; height: 35px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .hero-section { padding: 2.5rem 1.5rem 1.5rem; text-align: center; position: relative; }
 .hero-title { font-size: 2.5rem; color: var(--gold); letter-spacing: 2px; }
-
 .rooms-grid { display: grid; gap: 1.5rem; padding: 0 1.5rem 2rem; position: relative; z-index: 10;}
-.room-card {
-  background: var(--bg-card); border-radius: var(--radius-lg);
-  overflow: hidden; border: 1px solid var(--border-color);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.05); cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
+.room-card { background: var(--bg-card); border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border-color); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease; }
 .room-card:active { transform: scale(0.98); box-shadow: 0 4px 15px rgba(212,175,55,0.2); }
 .room-image { height: 220px; background-size: cover; background-position: center; position: relative; }
-.room-image::after {
-  content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%;
-  background: linear-gradient(to top, var(--bg-card), transparent);
-}
+.room-image::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, var(--bg-card), transparent); }
 .room-content { padding: 1.5rem; position: relative; z-index: 2; }
 .room-title { font-size: 1.4rem; margin-bottom: 0.5rem; }
 .room-desc-short { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; }
 .room-footer { display: flex; justify-content: space-between; align-items: flex-end; }
 .room-price { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--gold); }
-.btn-outline {
-  background: transparent; border: 1px solid var(--gold); color: var(--gold);
-  padding: 0.6rem 1.5rem; border-radius: 30px; font-weight: 600; font-size: 0.8rem;
-}
-
-/* ═══════════════════════════════════════
-   FORM & BUTTONS
-═══════════════════════════════════════ */
-.booking-section { 
-  padding: 2.5rem 1.5rem; background: var(--bg-card); 
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  border-top: 1px solid var(--border-color); position: relative; z-index: 10;
-}
+.btn-outline { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 0.6rem 1.5rem; border-radius: 30px; font-weight: 600; font-size: 0.8rem; }
+.booking-section { padding: 2.5rem 1.5rem; background: var(--bg-card); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--border-color); position: relative; z-index: 10; }
 .form-group { margin-bottom: 1.2rem; }
 .form-label { font-size: 0.75rem; font-weight: 600; color: var(--gold); margin-bottom: 8px; display: block; text-transform: uppercase; letter-spacing: 1px;}
-.form-input {
-  width: 100%; background: rgba(0,0,0,0.02); border: 1px solid var(--border-color);
-  color: var(--text-main); padding: 1.2rem 1rem; font-size: 1rem; font-family: inherit;
-  border-radius: var(--radius-sm); outline: none; transition: var(--transition);
-}
+.form-input { width: 100%; background: rgba(0,0,0,0.02); border: 1px solid var(--border-color); color: var(--text-main); padding: 1.2rem 1rem; font-size: 1rem; font-family: inherit; border-radius: var(--radius-sm); outline: none; transition: var(--transition); }
 body.dark-mode .form-input { background: rgba(255,255,255,0.02); }
 .form-input:focus { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
-
-/* Counters & Chips */
 .guest-counters { background: transparent; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px; margin-bottom: 1.5rem; }
 .counter-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; }
 .counter-row:not(:last-child) { border-bottom: 1px solid rgba(212,175,55,0.2); }
@@ -134,33 +62,15 @@ body.dark-mode .form-input { background: rgba(255,255,255,0.02); }
 .counter-ctrl { display: flex; align-items: center; gap: 10px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 30px; padding: 5px 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 .counter-ctrl button { background: transparent; border: none; color: var(--gold); font-size: 1.5rem; cursor: pointer; padding: 0 10px; outline: none; }
 .counter-ctrl input { width: 30px; text-align: center; background: transparent; border: none; color: var(--text-main); font-weight: 600; font-size: 1.1rem; pointer-events: none; padding: 0; }
-
 .chip-group { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 2rem; }
 .chip { padding: 10px 18px; background: transparent; border: 1px solid var(--border-color); color: var(--text-main); border-radius: 30px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: var(--transition); }
 .chip.active { background: var(--gold); color: #000; border-color: var(--gold); font-weight: 600;}
-
-.price-box {
-  background: linear-gradient(135deg, rgba(212,175,55,0.1), transparent);
-  padding: 1.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);
-  margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;
-}
-
-.btn-primary {
-  width: 100%; background: linear-gradient(45deg, var(--gold-dark), var(--gold));
-  color: #000; border: none; padding: 1.2rem; font-size: 1rem; font-weight: 600; border-radius: 30px;
-  text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(212,175,55,0.3); transition: var(--transition);
-}
+.price-box { background: linear-gradient(135deg, rgba(212,175,55,0.1), transparent); padding: 1.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
+.btn-primary { width: 100%; background: linear-gradient(45deg, var(--gold-dark), var(--gold)); color: #000; border: none; padding: 1.2rem; font-size: 1rem; font-weight: 600; border-radius: 30px; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(212,175,55,0.3); transition: var(--transition); }
 .btn-primary:active { transform: translateY(2px); box-shadow: 0 2px 5px rgba(212,175,55,0.3); }
-
-/* Modal */
 .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); backdrop-filter: blur(5px); z-index: 100; display: none; opacity: 0; transition: opacity 0.3s; }
 .modal-backdrop.show { display: block; opacity: 1; }
-.modal-content {
-  position: fixed; bottom: 0; left: 0; width: 100%; max-height: 92vh;
-  background: var(--bg-card); border-radius: 24px 24px 0 0; border-top: 1px solid var(--border-color);
-  z-index: 101; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  overflow-y: auto; padding-bottom: 2rem; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-}
+.modal-content { position: fixed; bottom: 0; left: 0; width: 100%; max-height: 92vh; background: var(--bg-card); border-radius: 24px 24px 0 0; border-top: 1px solid var(--border-color); z-index: 101; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); overflow-y: auto; padding-bottom: 2rem; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); }
 .modal-content.show { transform: translateY(0); }
 .modal-close { position: absolute; top: 15px; right: 15px; width: 35px; height: 35px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 10; border: 1px solid rgba(255,255,255,0.2); font-size: 1.2rem; }
 .modal-img { height: 280px; background-size: cover; background-position: center; position: relative;}
@@ -169,6 +79,17 @@ body.dark-mode .form-input { background: rgba(255,255,255,0.02); }
 .amenities-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 1.5rem 0; }
 .amenity-item { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-main); }
 .check-icon { color: var(--gold); font-weight: bold;}
+
+/* Yangi To'lov qutisi dizayni */
+.payment-box {
+  display: none; background: rgba(212,175,55,0.05); padding: 1.2rem;
+  border-radius: var(--radius-sm); border: 1px dashed var(--gold); margin-bottom: 1.5rem;
+}
+.card-number {
+  font-family: monospace; font-size: 1.3rem; color: var(--gold); 
+  letter-spacing: 3px; margin: 10px 0; background: var(--bg-main);
+  padding: 10px; border-radius: 8px; text-align: center;
+}
 </style>
 </head>
 <body>
@@ -210,10 +131,7 @@ body.dark-mode .form-input { background: rgba(255,255,255,0.02); }
     <label class="form-label">Mehmonlar</label>
     <div class="guest-counters">
       <div class="counter-row">
-        <div>
-          <span class="counter-label">Kattalar</span>
-          <span class="counter-sub">12+ yosh</span>
-        </div>
+        <div><span class="counter-label">Kattalar</span><span class="counter-sub">12+ yosh</span></div>
         <div class="counter-ctrl">
           <button type="button" onclick="updateCount('adult', -1)">-</button>
           <input type="number" id="adult_count" name="adults" value="1" readonly>
@@ -221,10 +139,7 @@ body.dark-mode .form-input { background: rgba(255,255,255,0.02); }
         </div>
       </div>
       <div class="counter-row">
-        <div>
-          <span class="counter-label">Bolalar</span>
-          <span class="counter-sub">12 yoshgacha</span>
-        </div>
+        <div><span class="counter-label">Bolalar</span><span class="counter-sub">12 yoshgacha</span></div>
         <div class="counter-ctrl">
           <button type="button" onclick="updateCount('child', -1)">-</button>
           <input type="number" id="child_count" name="children" value="0" readonly>
@@ -237,11 +152,27 @@ body.dark-mode .form-input { background: rgba(255,255,255,0.02); }
     <div class="chip-group" id="tripTypeGroup">
       <button type="button" class="chip active" onclick="selectTripType('Juftlik', this)">💑 Juftlik</button>
       <button type="button" class="chip" onclick="selectTripType('Oilaviy', this)">👨‍👩‍👧‍👦 Oilaviy</button>
-      <button type="button" class="chip" onclick="selectTripType('Do\\'stlar', this)">🎉 Do'stlar</button>
+      <button type="button" class="chip" onclick="selectTripType('Dostlar', this)">🎉 Do'stlar</button>
       <button type="button" class="chip" onclick="selectTripType('Biznes', this)">💼 Biznes</button>
-      <button type="button" class="chip" onclick="selectTripType('Yolg\\'iz', this)">👤 Yolg'iz</button>
+      <button type="button" class="chip" onclick="selectTripType('Yolgiz', this)">👤 Yolg'iz</button>
     </div>
     <input type="hidden" name="trip_type" id="trip_type" value="Juftlik">
+
+    <label class="form-label">To'lov usuli (10% Avans chegirma beradi)</label>
+    <div class="chip-group" id="paymentTypeGroup">
+      <button type="button" class="chip active" onclick="selectPayment('joyida', this)">🏨 Joyida to'lash</button>
+      <button type="button" class="chip" onclick="selectPayment('avans', this)">💳 10% Avans (Kafolatli)</button>
+    </div>
+    <input type="hidden" name="payment_type" id="payment_type" value="joyida">
+
+    <div class="payment-box" id="avansBox">
+      <p style="font-size: 0.85rem; color: var(--text-main);">Broningiz 100% kafolatlanishi uchun jami summaning 10% qismini quyidagi kartaga o'tkazing (Payme/Uzum orqali):</p>
+      <div class="card-number">9860 3401 0170 8832</div>
+      <p style="font-size: 0.9rem; text-align: center; color: var(--text-muted);">
+        O'tkaziladigan summa: <b id="avansAmount" style="color: var(--gold); font-size: 1.1rem;">$0</b>
+      </p>
+      <p style="font-size: 0.75rem; text-align: center; color: var(--text-muted); font-style: italic; margin-top: 10px;">* To'lovni amalga oshirgach, pastdagi tugmani bosing.</p>
+    </div>
 
     <div class="form-group">
       <label class="form-label">To'liq ism</label>
@@ -272,10 +203,8 @@ body.dark-mode .form-input { background: rgba(255,255,255,0.02); }
   <div class="modal-body">
     <h2 id="mTitle" style="font-size: 2rem; margin-bottom: 10px; color: var(--gold);"></h2>
     <p id="mDesc" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;"></p>
-    
     <h3 style="margin-top: 1.5rem; font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Qulayliklar</h3>
     <div class="amenities-grid" id="mAmenities"></div>
-    
     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; background: rgba(0,0,0,0.02); padding: 15px; border-radius: 15px; border: 1px solid var(--border-color);">
       <div><span style="font-size: 1.8rem; color: var(--gold); font-family: 'Playfair Display';" id="mPrice"></span><span style="font-size:0.8rem; color:var(--text-muted);">/kecha</span></div>
       <button class="btn-primary" style="width: auto; padding: 0.8rem 1.5rem; margin-top: 0; font-size: 0.9rem;" onclick="selectRoomFromModal()">SHU XONANI TANLASH</button>
@@ -288,8 +217,7 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 tg.ready();
 
-// ── CONFIG ──
-// SIZNING RENDER LINKINGIZ SHU YERGA ULANGAN
+// ── RENDER SERVER LINKI ──
 const API_BASE = 'https://hotel-rsn5.onrender.com'; 
 
 const ROOMS = {
@@ -330,11 +258,9 @@ window.onload = () => {
     document.body.classList.add('dark-mode');
     document.getElementById('themeBtn').innerText = '☀️';
   }
-
   if(tg.initDataUnsafe?.user) {
     document.getElementById('fi_name').value = `${tg.initDataUnsafe.user.first_name || ''} ${tg.initDataUnsafe.user.last_name || ''}`.trim();
   }
-
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('fi_checkin').min = today;
   document.getElementById('fi_checkin').value = today;
@@ -349,7 +275,6 @@ window.onload = () => {
 function renderRooms() {
   const container = document.getElementById('roomsContainer');
   const select = document.getElementById('fi_room');
-  
   Object.keys(ROOMS).forEach(key => {
     const r = ROOMS[key];
     container.innerHTML += `
@@ -369,11 +294,28 @@ function renderRooms() {
   });
 }
 
+// ── PUFAKCHALAR (CHIPS) LOGIKASI TO'G'RILANDI ──
 function selectTripType(type, btn) {
   if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
   document.getElementById('trip_type').value = type;
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  // Faqat Safar turi tugmalarini tozalaydi
+  document.querySelectorAll('#tripTypeGroup .chip').forEach(c => c.classList.remove('active'));
   btn.classList.add('active');
+}
+
+function selectPayment(type, btn) {
+  if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+  document.getElementById('payment_type').value = type;
+  // Faqat To'lov usuli tugmalarini tozalaydi
+  document.querySelectorAll('#paymentTypeGroup .chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  
+  const avansBox = document.getElementById('avansBox');
+  if(type === 'avans') {
+    avansBox.style.display = 'block';
+  } else {
+    avansBox.style.display = 'none';
+  }
 }
 
 function updateCount(type, change) {
@@ -401,16 +343,13 @@ function openModal(key) {
   if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
   currentSelectedRoom = key;
   const r = ROOMS[key];
-  
   document.getElementById('mImg').style.backgroundImage = `url('${r.img}')`;
   document.getElementById('mTitle').innerText = r.name;
   document.getElementById('mDesc').innerText = r.desc;
   document.getElementById('mPrice').innerText = `$${r.price}`;
-  
   let amHtml = '';
   r.amenities.forEach(a => { amHtml += `<div class="amenity-item"><span class="check-icon">✓</span> ${a}</div>`; });
   document.getElementById('mAmenities').innerHTML = amHtml;
-
   document.getElementById('modalBackdrop').classList.add('show');
   document.getElementById('roomModal').classList.add('show');
 }
@@ -443,7 +382,9 @@ function updatePricePreview() {
 
   const nights = Math.max(1, Math.round((new Date(co)-new Date(ci))/(86400000)));
   const total  = ROOMS[rt].price * nights;
+  
   document.getElementById('ppTotal').textContent = `$${total.toLocaleString()}`;
+  document.getElementById('avansAmount').textContent = `$${(total * 0.1).toLocaleString()}`;
 }
 
 async function submitBook(e) {
