@@ -15,10 +15,8 @@ const PORT = process.env.PORT || 3000;
 const BOT_TOKEN = '8762173444:AAFKaXkIezMwVAXf1ezOnM-Of_1ZWRCqzlU';
 const ADMIN_CHAT_ID = '6612990282'; 
 
-// Botni ishga tushirish (xabarlarni kutadi)
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
-// BOTGA /start BOSILGANDA
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
   const welcomeText = `
@@ -31,15 +29,13 @@ Xonani band qilish va xizmatlarimiz bilan tanishish uchun quyidagi tugmani bosin
     parse_mode: 'HTML',
     reply_markup: {
       inline_keyboard: [
-        // DIQQAT: NETLIFY LINKINGIZNI SHU YERGA QO'YING
-        [{ text: "🏨 Xona Band Qilish (Web App)", web_app: { url: "https://hotel12321.netlify.app" } }]
+        [{ text: "🏨 Xona Band Qilish", web_app: { url: "https://hotel12321.netlify.app" } }]
       ]
     }
   };
   bot.sendMessage(chatId, welcomeText, opts);
 });
 
-// ADMIN TASDIQLASH/BEKOR QILISH TUGMASINI BOSGANDA
 bot.on('callback_query', (query) => {
   const action = query.data;
   const chatId = query.message.chat.id;
@@ -58,18 +54,24 @@ if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
 const db = new Database(DB_PATH);
 db.pragma('journal_mode = WAL');
 
-// BAZAGA YANGI QATORLAR QO'SHILDI (adults, children, trip_type)
+// BAZANI XAVFSIZ YANGILASH (Agar ustun yo'q bo'lsa qo'shadi)
+try {
+  db.exec(`ALTER TABLE bookings ADD COLUMN payment_type TEXT DEFAULT 'joyida';`);
+} catch (e) {
+  // Agar allaqachon mavjud bo'lsa e'tibor bermaydi
+}
+
 db.exec(`
   CREATE TABLE IF NOT EXISTS bookings (
     id TEXT PRIMARY KEY, tg_id TEXT, first_name TEXT, 
     phone TEXT, check_in TEXT, check_out TEXT, room_type TEXT, 
     adults INTEGER DEFAULT 1, children INTEGER DEFAULT 0, trip_type TEXT,
-    special_requests TEXT, status TEXT DEFAULT 'pending', total_price REAL,
+    payment_type TEXT DEFAULT 'joyida', special_requests TEXT, 
+    status TEXT DEFAULT 'pending', total_price REAL,
     created_at TEXT DEFAULT (datetime('now'))
   );
 `);
 
-// ── Middleware ────────────────────────────────────────────────────────────────
 app.use(helmet());
 app.use(cors({ origin: '*', credentials: true })); 
 app.use(express.json());
@@ -86,7 +88,11 @@ async function handleNewBooking(booking, rawData) {
   const nights = calcNights(booking.check_in, booking.check_out);
   const roomName = ROOM_NAMES[booking.room_type] || booking.room_type;
   
-  // 1. SIZGA (ADMINGA) KELADIGAN XABAR - ELITE FORMAT
+  const avansSumma = (booking.total_price * 0.1).toFixed(2);
+  const paymentText = rawData.payment_type === 'avans' 
+    ? `🟡 <b>10% AVANS KARTA ORQALI</b> ($${avansSumma} ni tekshiring!)` 
+    : `🏨 <b>Joyida to'lash</b>`;
+
   const adminMsg = `
 🔔 <b>YANGI VIP BRON</b>
 
@@ -97,9 +103,10 @@ async function handleNewBooking(booking, rawData) {
 
 👥 <b>Mehmonlar:</b> ${rawData.adults} ta katta, ${rawData.children} ta bola
 🎯 <b>Safar turi:</b> ${rawData.trip_type}
+💳 <b>To'lov usuli:</b> ${paymentText}
 📝 <b>Istak:</b> ${booking.special_requests || "Yo'q"}
 
-💰 <b>Jami tushum:</b> $${booking.total_price}
+💰 <b>Jami summa:</b> $${booking.total_price}
   `;
   
   const opts = {
@@ -115,16 +122,14 @@ async function handleNewBooking(booking, rawData) {
     await bot.sendMessage(ADMIN_CHAT_ID, adminMsg, opts);
   } catch (e) { console.error("Adminga xabar yuborishda xato:", e.message); }
 
-  // 2. MIJOZGA KELADIGAN XABAR
   if (booking.tg_id) {
     const clientMsg = `Hurmatli <b>${booking.first_name}</b>, sizning <b>${roomName}</b> uchun buyurtmangiz qabul qilindi.\n\n💰 Jami to'lov: <b>$${booking.total_price}</b>.\n<i>Menejerimiz tez orada aloqaga chiqadi.</i>`;
     try {
       await bot.sendMessage(booking.tg_id, clientMsg, { parse_mode: 'HTML' });
-    } catch (e) { /* Ignore */ }
+    } catch (e) {}
   }
 }
 
-// ── API ROUTES ────────────────────────────────────────────────────────────────
 app.post('/api/bookings', async (req, res) => {
     const data = req.body;
     const nights = calcNights(data.check_in, data.check_out);
@@ -132,8 +137,8 @@ app.post('/api/bookings', async (req, res) => {
     const id = uuidv4();
 
     const insert = db.prepare(`
-      INSERT INTO bookings (id,tg_id,first_name,phone,check_in,check_out,room_type,adults,children,trip_type,special_requests,total_price)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+      INSERT INTO bookings (id,tg_id,first_name,phone,check_in,check_out,room_type,adults,children,trip_type,payment_type,special_requests,total_price)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
     `);
 
     try {
@@ -148,6 +153,7 @@ app.post('/api/bookings', async (req, res) => {
         data.adults || 1, 
         data.children || 0, 
         data.trip_type || 'Juftlik', 
+        data.payment_type || 'joyida',
         data.special_requests || '', 
         total_price
       );
@@ -155,7 +161,7 @@ app.post('/api/bookings', async (req, res) => {
       const newBooking = { id, ...data, total_price };
       setImmediate(() => handleNewBooking(newBooking, data));
 
-      res.status(201).json({ success: true, data: { booking_id: id.slice(0,8).toUpperCase(), total_price } });
+      res.status(201).json({ success: true });
     } catch (e) {
       console.error(e);
       res.status(500).json({ success: false, message: 'Server xatoligi' });
