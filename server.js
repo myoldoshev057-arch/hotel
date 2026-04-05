@@ -75,7 +75,7 @@ app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json());
 
 const ROOM_PRICES = { deluxe_king: 280, luxury_twin: 420, presidential: 1200 };
-const ROOM_NAMES  = { deluxe_king: 'Deluxe King', luxury_twin: 'Luxury Twin Suite', presidential: 'Presidential Suite' };
+const ROOM_NAMES  = { deluxe_king: 'Deluxe King Room', luxury_twin: 'Luxury Twin Suite', presidential: 'Presidential Suite' };
 
 function calcNights(checkIn, checkOut) {
   const ms = new Date(checkOut) - new Date(checkIn);
@@ -84,7 +84,7 @@ function calcNights(checkIn, checkOut) {
 
 async function handleNewBooking(booking, rawData) {
   const nights = calcNights(booking.check_in, booking.check_out);
-  const roomName = ROOM_NAMES[booking.room_type];
+  const roomName = ROOM_NAMES[booking.room_type] || booking.room_type;
   
   // 1. SIZGA (ADMINGA) KELADIGAN XABAR - ELITE FORMAT
   const adminMsg = `
@@ -97,7 +97,7 @@ async function handleNewBooking(booking, rawData) {
 
 👥 <b>Mehmonlar:</b> ${rawData.adults} ta katta, ${rawData.children} ta bola
 🎯 <b>Safar turi:</b> ${rawData.trip_type}
-📝 <b>Istak:</b> ${booking.special_requests || 'Yo\\'q'}
+📝 <b>Istak:</b> ${booking.special_requests || "Yo'q"}
 
 💰 <b>Jami tushum:</b> $${booking.total_price}
   `;
