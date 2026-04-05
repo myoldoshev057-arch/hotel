@@ -2,11 +2,10 @@ require('dotenv').config();
 const express      = require('express');
 const cors         = require('cors');
 const helmet       = require('helmet');
-const rateLimit    = require('express-rate-limit');
 const path         = require('path');
 const { v4: uuidv4 } = require('uuid');
 const Database     = require('better-sqlite3');
-const TelegramBot  = require('node-telegram-bot-api'); // BOT UCHUN KUTUBXONA
+const TelegramBot  = require('node-telegram-bot-api'); 
 const fs           = require('fs');
 
 const app  = express();
@@ -16,10 +15,10 @@ const PORT = process.env.PORT || 3000;
 const BOT_TOKEN = '8762173444:AAFKaXkIezMwVAXf1ezOnM-Of_1ZWRCqzlU';
 const ADMIN_CHAT_ID = '6612990282'; 
 
-// Botni ishga tushirish (Polling rejimida, ya'ni xabarlarni doim kutadi)
+// Botni ishga tushirish (xabarlarni kutadi)
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
-// BOTGA /start BOSILGANDA NIMA BO'LISHI
+// BOTGA /start BOSILGANDA
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
   const welcomeText = `
@@ -32,7 +31,7 @@ Xonani band qilish va xizmatlarimiz bilan tanishish uchun quyidagi tugmani bosin
     parse_mode: 'HTML',
     reply_markup: {
       inline_keyboard: [
-        // NETLIFY LINKINGIZNI SHU YERGA QO'YASIZ
+        // DIQQAT: NETLIFY LINKINGIZNI SHU YERGA QO'YING
         [{ text: "🏨 Xona Band Qilish (Web App)", web_app: { url: "https://hotel12321.netlify.app" } }]
       ]
     }
@@ -52,7 +51,6 @@ bot.on('callback_query', (query) => {
   }
 });
 
-
 // ── Database ─────────────────────────────────────────────────────────────────
 const DB_PATH = process.env.DB_PATH || './db/aurum.sqlite';
 const dbDir   = path.dirname(DB_PATH);
@@ -60,11 +58,13 @@ if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
 const db = new Database(DB_PATH);
 db.pragma('journal_mode = WAL');
 
+// BAZAGA YANGI QATORLAR QO'SHILDI (adults, children, trip_type)
 db.exec(`
   CREATE TABLE IF NOT EXISTS bookings (
-    id TEXT PRIMARY KEY, tg_id TEXT, first_name TEXT, last_name TEXT,
-    email TEXT, phone TEXT, check_in TEXT, check_out TEXT, room_type TEXT, 
-    guests INTEGER, special_requests TEXT, status TEXT DEFAULT 'pending', total_price REAL,
+    id TEXT PRIMARY KEY, tg_id TEXT, first_name TEXT, 
+    phone TEXT, check_in TEXT, check_out TEXT, room_type TEXT, 
+    adults INTEGER DEFAULT 1, children INTEGER DEFAULT 0, trip_type TEXT,
+    special_requests TEXT, status TEXT DEFAULT 'pending', total_price REAL,
     created_at TEXT DEFAULT (datetime('now'))
   );
 `);
@@ -74,19 +74,19 @@ app.use(helmet());
 app.use(cors({ origin: '*', credentials: true })); 
 app.use(express.json());
 
-const ROOM_PRICES = { deluxe_king: 280, luxury_twin: 420, presidential: 1200, royal_penthouse: 2500 };
-const ROOM_NAMES  = { deluxe_king: 'Deluxe King', luxury_twin: 'Luxury Twin', presidential: 'Presidential Suite', royal_penthouse: 'Royal Penthouse (VIP)' };
+const ROOM_PRICES = { deluxe_king: 280, luxury_twin: 420, presidential: 1200 };
+const ROOM_NAMES  = { deluxe_king: 'Deluxe King', luxury_twin: 'Luxury Twin Suite', presidential: 'Presidential Suite' };
 
 function calcNights(checkIn, checkOut) {
   const ms = new Date(checkOut) - new Date(checkIn);
   return Math.max(1, Math.round(ms / (1000 * 60 * 60 * 24)));
 }
 
-async function handleNewBooking(booking) {
+async function handleNewBooking(booking, rawData) {
   const nights = calcNights(booking.check_in, booking.check_out);
   const roomName = ROOM_NAMES[booking.room_type];
   
-  // 1. SIZGA (ADMINGA) KELADIGAN XABAR
+  // 1. SIZGA (ADMINGA) KELADIGAN XABAR - ELITE FORMAT
   const adminMsg = `
 🔔 <b>YANGI VIP BRON</b>
 
@@ -94,8 +94,12 @@ async function handleNewBooking(booking) {
 📞 <b>Tel:</b> ${booking.phone}
 🛏 <b>Xona:</b> ${roomName}
 📅 <b>Sana:</b> ${booking.check_in} ➡️ ${booking.check_out} (${nights} kecha)
+
+👥 <b>Mehmonlar:</b> ${rawData.adults} ta katta, ${rawData.children} ta bola
+🎯 <b>Safar turi:</b> ${rawData.trip_type}
+📝 <b>Istak:</b> ${booking.special_requests || 'Yo\\'q'}
+
 💰 <b>Jami tushum:</b> $${booking.total_price}
-📝 <b>Istak:</b> ${booking.special_requests || 'Yo\'q'}
   `;
   
   const opts = {
@@ -128,15 +132,28 @@ app.post('/api/bookings', async (req, res) => {
     const id = uuidv4();
 
     const insert = db.prepare(`
-      INSERT INTO bookings (id,tg_id,first_name,last_name,email,phone,check_in,check_out,room_type,guests,special_requests,total_price)
+      INSERT INTO bookings (id,tg_id,first_name,phone,check_in,check_out,room_type,adults,children,trip_type,special_requests,total_price)
       VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
     `);
 
     try {
-      insert.run(id, data.tg_id || '', data.first_name, data.last_name || '', data.email || '', data.phone, data.check_in, data.check_out, data.room_type, data.guests || 1, data.special_requests || '', total_price);
+      insert.run(
+        id, 
+        data.tg_id || '', 
+        data.first_name, 
+        data.phone, 
+        data.check_in, 
+        data.check_out, 
+        data.room_type, 
+        data.adults || 1, 
+        data.children || 0, 
+        data.trip_type || 'Juftlik', 
+        data.special_requests || '', 
+        total_price
+      );
       
       const newBooking = { id, ...data, total_price };
-      setImmediate(() => handleNewBooking(newBooking));
+      setImmediate(() => handleNewBooking(newBooking, data));
 
       res.status(201).json({ success: true, data: { booking_id: id.slice(0,8).toUpperCase(), total_price } });
     } catch (e) {
