@@ -29,7 +29,7 @@ Xonani band qilish va xizmatlarimiz bilan tanishish uchun quyidagi tugmani bosin
     parse_mode: 'HTML',
     reply_markup: {
       inline_keyboard: [
-        [{ text: "🏨 Xona Band Qilish", web_app: { url: "https://hotel12321.netlify.app" } }]
+        [{ text: "🏨 Xona Band Qilish", web_app: { url: "https://myoldoshev057-arch.github.io/hotel/" } }]
       ]
     }
   };
