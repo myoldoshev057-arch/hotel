@@ -52,7 +52,7 @@ body {
   background-attachment: fixed;
 }
 
-/* Noise/Grain Texture (Haqiqiy elita hissi) */
+/* Noise/Grain Texture */
 body::after {
   content: ""; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
@@ -68,7 +68,7 @@ h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 500; }
   display: flex; justify-content: space-between; align-items: center;
   padding: 1.5rem; 
   background: var(--bg-card);
-  backdrop-filter: blur(12px); /* Shisha effekti */
+  backdrop-filter: blur(12px); 
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-color);
   position: sticky; top: 0; z-index: 50;
@@ -289,7 +289,8 @@ tg.expand();
 tg.ready();
 
 // ── CONFIG ──
-const API_BASE = 'https://aurum-hotel-api.onrender.com'; // BU YERNI SERVER ISHGA TUSHKANDAN SO'NG O'ZGARTIRASIZ
+// SIZNING RENDER LINKINGIZ SHU YERGA ULANGAN
+const API_BASE = 'https://hotel-rsn5.onrender.com'; 
 
 const ROOMS = {
   deluxe_king: { 
@@ -475,7 +476,7 @@ async function submitBook(e) {
     }
   } catch(err) {
      tg.HapticFeedback.notificationOccurred('error');
-     tg.showAlert("🌐 Server bilan aloqa yo'q. Dasturchi serverni ishga tushirmagan!");
+     tg.showAlert("🌐 Server bilan aloqa yo'q. Qayta urinib ko'ring.");
      btn.innerText = 'BRONNI TASDIQLASH'; btn.disabled = false;
   }
 }
