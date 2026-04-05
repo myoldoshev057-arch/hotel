@@ -52,7 +52,7 @@ body {
 h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 500; }
 
 /* ═══════════════════════════════════════
-   HEADER & THEME/LANG CONTROLS
+   HEADER & THEME CONTROLS
 ═══════════════════════════════════════ */
 .header {
   display: flex; justify-content: space-between; align-items: center;
@@ -63,7 +63,6 @@ h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 500; }
 .logo-mini { font-size: 1.5rem; letter-spacing: 2px; }
 .controls { display: flex; gap: 15px; align-items: center; }
 
-/* Theme Toggle Button */
 .theme-toggle {
   background: transparent; border: 1px solid var(--border-color);
   color: var(--text-main); width: 35px; height: 35px; border-radius: 50%;
@@ -103,7 +102,7 @@ h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 500; }
 }
 
 /* ═══════════════════════════════════════
-   ROOM DETAIL MODAL (ELITE)
+   ROOM DETAIL MODAL
 ═══════════════════════════════════════ */
 .modal-backdrop {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -135,20 +134,36 @@ h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 500; }
 }
 
 /* ═══════════════════════════════════════
-   BOOKING FORM
+   BOOKING FORM & NEW GUEST COUNTERS
 ═══════════════════════════════════════ */
 .booking-section { padding: 2rem 1.5rem; background: var(--bg-card); margin-top: 2rem; border-top: 1px solid var(--border-color); }
 .form-group { margin-bottom: 1.2rem; }
-.form-label { font-size: 0.8rem; font-weight: 600; color: var(--gold); margin-bottom: 5px; display: block; }
+.form-label { font-size: 0.8rem; font-weight: 600; color: var(--gold); margin-bottom: 8px; display: block; text-transform: uppercase; }
 .form-input {
   width: 100%; background: var(--bg-main); border: 1px solid var(--border-color);
   color: var(--text-main); padding: 1rem; font-size: 1rem; font-family: inherit;
   border-radius: var(--radius-sm); outline: none; transition: var(--transition);
 }
 .form-input:focus { border-color: var(--gold); }
+
+/* Counters */
+.guest-counters { background: var(--bg-main); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px; margin-bottom: 1.2rem; }
+.counter-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; }
+.counter-row:not(:last-child) { border-bottom: 1px solid var(--border-color); }
+.counter-label { font-weight: 600; font-size: 0.95rem; }
+.counter-sub { font-size: 0.75rem; color: var(--text-muted); display: block; }
+.counter-ctrl { display: flex; align-items: center; gap: 10px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; padding: 5px 10px; }
+.counter-ctrl button { background: transparent; border: none; color: var(--gold); font-size: 1.5rem; cursor: pointer; padding: 0 10px; outline: none; }
+.counter-ctrl input { width: 30px; text-align: center; background: transparent; border: none; color: var(--text-main); font-weight: 600; font-size: 1rem; pointer-events: none; padding: 0; }
+
+/* Chips */
+.chip-group { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 1.5rem; }
+.chip { padding: 8px 16px; background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-muted); border-radius: 20px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: var(--transition); }
+.chip.active { background: var(--gold); color: #000; border-color: var(--gold); }
+
 .price-box {
   background: rgba(212, 175, 55, 0.1); padding: 1.5rem; border-radius: var(--radius-sm);
-  margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid var(--gold);
 }
 </style>
 </head>
@@ -169,12 +184,14 @@ h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 500; }
 <div class="rooms-grid" id="roomsContainer"></div>
 
 <div class="booking-section" id="bookingSection">
-  <h2 style="margin-bottom: 1.5rem; border-left: 3px solid var(--gold); padding-left: 10px;">Ma'lumotlarni kiriting</h2>
+  <h2 style="margin-bottom: 1.5rem; border-left: 3px solid var(--gold); padding-left: 10px; font-size: 1.5rem;">Ma'lumotlarni kiriting</h2>
+  
   <form id="bookForm" onsubmit="submitBook(event)">
     <div class="form-group">
       <label class="form-label">Xona turi</label>
       <select name="room_type" id="fi_room" class="form-input" required onchange="updatePricePreview()"></select>
     </div>
+    
     <div style="display: flex; gap: 10px;">
       <div class="form-group" style="flex:1;">
         <label class="form-label">Kelish</label>
@@ -185,6 +202,43 @@ h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 500; }
         <input type="date" name="check_out" id="fi_checkout" class="form-input" required onchange="updatePricePreview()">
       </div>
     </div>
+
+    <label class="form-label">Mehmonlar soni</label>
+    <div class="guest-counters">
+      <div class="counter-row">
+        <div>
+          <span class="counter-label">Kattalar</span>
+          <span class="counter-sub">12 yosh va undan katta</span>
+        </div>
+        <div class="counter-ctrl">
+          <button type="button" onclick="updateCount('adult', -1)">-</button>
+          <input type="number" id="adult_count" name="adults" value="1" readonly>
+          <button type="button" onclick="updateCount('adult', 1)">+</button>
+        </div>
+      </div>
+      <div class="counter-row">
+        <div>
+          <span class="counter-label">Bolalar</span>
+          <span class="counter-sub">12 yoshgacha</span>
+        </div>
+        <div class="counter-ctrl">
+          <button type="button" onclick="updateCount('child', -1)">-</button>
+          <input type="number" id="child_count" name="children" value="0" readonly>
+          <button type="button" onclick="updateCount('child', 1)">+</button>
+        </div>
+      </div>
+    </div>
+
+    <label class="form-label">Safar maqsadi</label>
+    <div class="chip-group" id="tripTypeGroup">
+      <button type="button" class="chip active" onclick="selectTripType('Juftlik', this)">💑 Juftlik</button>
+      <button type="button" class="chip" onclick="selectTripType('Oilaviy', this)">👨‍👩‍👧‍👦 Oilaviy</button>
+      <button type="button" class="chip" onclick="selectTripType('Do\\'stlar', this)">🎉 Do'stlar</button>
+      <button type="button" class="chip" onclick="selectTripType('Ish safari', this)">💼 Ish safari</button>
+      <button type="button" class="chip" onclick="selectTripType('Yolg\\'iz', this)">👤 Yolg'iz</button>
+    </div>
+    <input type="hidden" name="trip_type" id="trip_type" value="Juftlik">
+
     <div class="form-group">
       <label class="form-label">To'liq ism</label>
       <input type="text" name="first_name" id="fi_name" class="form-input" placeholder="Ism Familiya" required>
@@ -231,27 +285,27 @@ tg.expand();
 tg.ready();
 
 // ── CONFIG ──
-// DIQQAT: Serveringiz domenini shu yerga yozing!
+// DIQQAT: Serveringiz domenini shu yerga yozing! Masalan: https://aurum-api.onrender.com
 const API_BASE = 'https://sizning-backend-domeningiz.onrender.com'; 
 
 const ROOMS = {
   deluxe_king: { 
-    name: "Deluxe King Room", price: 280, 
+    name: "Deluxe King Room", price: 280, max_guests: 2,
     img: "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=800&q=80",
     desc: "Katta oyna orqali shaharga ajoyib manzara ochiladigan klassik xona. Yengillik va qulaylik uyg'unligi.",
-    amenities: ["King-size yotoq", "Marmar hammom", "Bepul yuqori tezlikdagi Wi-Fi", "4K Smart TV", "Mini-bar", "Premium shampun/gellar", "Yumshoq xalat va shippak", "Seyf"]
+    amenities: ["King-size yotoq", "Marmar hammom", "Bepul Wi-Fi", "4K Smart TV", "Mini-bar", "Premium kosmetika", "Xalat va shippak", "Seyf"]
   },
   luxury_twin: { 
-    name: "Luxury Twin Suite", price: 420, 
+    name: "Luxury Twin Suite", price: 420, max_guests: 3,
     img: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=800&q=80",
     desc: "Oila yoki do'stlar bilan dam olish uchun ideal. Ikkita alohida yotoq va keng yashash zali mavjud.",
-    amenities: ["2 ta Premium yotoq", "Alohida yashash zali", "Nespresso kofe mashinasi", "Bepul Wi-Fi", "Smart TV", "Xalat va shippak", "Ish stoli", "Seyf"]
+    amenities: ["2 ta Premium yotoq", "Alohida yashash zali", "Nespresso kofe", "Bepul Wi-Fi", "Smart TV", "Xalat va shippak", "Ish stoli", "Seyf"]
   },
   presidential: { 
-    name: "Presidential Suite", price: 1200, 
+    name: "Presidential Suite", price: 1200, max_guests: 6,
     img: "https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&w=800&q=80",
     desc: "Haqiqiy elita uchun. 3 xonali to'liq jihozlangan suite, shaxsiy butler xizmati va 270 daraja panoramik oyna.",
-    amenities: ["Shaxsiy Butler (24/7)", "Jakuzi", "VIP Lounge ruxsati", "Katta mehmonxona", "Maxsus oshxona", "Premium tozalash xizmati", "Spa zonaga ruxsat"]
+    amenities: ["Shaxsiy Butler (24/7)", "Jakuzi", "VIP Lounge", "Katta mehmonxona", "Maxsus oshxona", "Premium tozalash", "Spa zonaga ruxsat"]
   }
 };
 
@@ -269,19 +323,16 @@ function toggleTheme() {
 
 // ── INIT ──
 window.onload = () => {
-  // Check theme
   const savedTheme = localStorage.getItem('aurum_theme');
   if(savedTheme === 'dark' || (!savedTheme && tg.colorScheme === 'dark')) {
     document.body.classList.add('dark-mode');
     document.getElementById('themeBtn').innerText = '☀️';
   }
 
-  // Pre-fill user data
   if(tg.initDataUnsafe?.user) {
     document.getElementById('fi_name').value = `${tg.initDataUnsafe.user.first_name || ''} ${tg.initDataUnsafe.user.last_name || ''}`.trim();
   }
 
-  // Dates
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('fi_checkin').min = today;
   document.getElementById('fi_checkin').value = today;
@@ -299,7 +350,6 @@ function renderRooms() {
   
   Object.keys(ROOMS).forEach(key => {
     const r = ROOMS[key];
-    // Add to Grid
     container.innerHTML += `
       <div class="room-card" onclick="openModal('${key}')">
         <div class="room-image" style="background-image: url('${r.img}')"></div>
@@ -313,9 +363,42 @@ function renderRooms() {
         </div>
       </div>
     `;
-    // Add to Select
     select.innerHTML += `<option value="${key}">${r.name}</option>`;
   });
+}
+
+// ── NEW: GUEST & TRIP LOGIC ──
+function selectTripType(type, btn) {
+  if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+  document.getElementById('trip_type').value = type;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function updateCount(type, change) {
+  if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+  const adultInp = document.getElementById('adult_count');
+  const childInp = document.getElementById('child_count');
+  const roomKey = document.getElementById('fi_room').value;
+  const maxAllowed = ROOMS[roomKey] ? ROOMS[roomKey].max_guests : 2;
+
+  let a = parseInt(adultInp.value);
+  let c = parseInt(childInp.value);
+
+  if (type === 'adult') {
+    if (a + change >= 1) a += change; 
+  } else {
+    if (c + change >= 0) c += change; 
+  }
+
+  if (a + c > maxAllowed) {
+    tg.showAlert(`Kechirasiz, tanlangan xonaga ko'pi bilan ${maxAllowed} kishi sig'adi.`);
+    if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
+    return;
+  }
+
+  adultInp.value = a;
+  childInp.value = c;
 }
 
 // ── MODAL LOGIC ──
@@ -358,6 +441,16 @@ function updatePricePreview() {
   const rt = document.getElementById('fi_room').value;
   
   if (!ci || !co || !rt) return;
+
+  // Max guest check on room change
+  const adultInp = document.getElementById('adult_count');
+  const childInp = document.getElementById('child_count');
+  const max = ROOMS[rt].max_guests;
+  if (parseInt(adultInp.value) + parseInt(childInp.value) > max) {
+      adultInp.value = 1;
+      childInp.value = 0;
+  }
+
   const nights = Math.max(1, Math.round((new Date(co)-new Date(ci))/(86400000)));
   const total  = ROOMS[rt].price * nights;
   document.getElementById('ppTotal').textContent = `$${total.toLocaleString()}`;
@@ -385,15 +478,18 @@ async function submitBook(e) {
     const result = await resp.json();
 
     if (result.success) {
+      tg.HapticFeedback.notificationOccurred('success');
       tg.showAlert("✅ Bron muvaffaqiyatli qabul qilindi!");
-      setTimeout(() => tg.close(), 2000); // Close WebApp after success
+      setTimeout(() => tg.close(), 2000); 
     } else {
+      tg.HapticFeedback.notificationOccurred('error');
       tg.showAlert("❌ Xatolik: " + result.message);
       btn.innerText = 'BRONNI TASDIQLASH';
       btn.disabled = false;
     }
   } catch(err) {
-     tg.showAlert("🌐 Server xatosi. Iltimos tekshirib qayta urinib ko'ring.");
+     tg.HapticFeedback.notificationOccurred('error');
+     tg.showAlert("🌐 Server bilan aloqa yo'q. Qayta urinib ko'ring.");
      btn.innerText = 'BRONNI TASDIQLASH';
      btn.disabled = false;
   }
