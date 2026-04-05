@@ -60,7 +60,11 @@ db.exec(`
 `);
 
 // ── Middleware ────────────────────────────────────────────────────────────────
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000').split(',');
+// O'ZGARISH: Netlify domeningizga so'rov yuborishga ruxsat berdik (CORS)
+const allowedOrigins = [
+  'http://localhost:3000', 
+  'https://hotel12321.netlify.app' // Shu yerni qo'shdik!
+];
 
 app.use(helmet({
   contentSecurityPolicy: {
@@ -74,7 +78,16 @@ app.use(helmet({
     },
   },
 }));
-app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(cors({ 
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Vaqtincha barcha domenlarga ruxsat (Mini App muammosiz ishlashi uchun)
+    }
+  }, 
+  credentials: true 
+}));
 app.use(morgan('dev'));
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -105,24 +118,27 @@ function calcNights(checkIn, checkOut) {
 
 // ── Notification Services ─────────────────────────────────────────────────────
 
-// Telegram orqali xabar yuborish
+// O'ZGARISH: Telegram xabar formati Mini Appga moslashtirildi
 async function notifyTelegram(booking) {
   const nights = calcNights(booking.check_in, booking.check_out);
   const roomName = ROOM_NAMES[booking.room_type] || booking.room_type;
+  
   const msg = `
-🏨 *AURUM — Yangi Bron!*
+🆕 *YANGI BRON (Mini App orqali)*
 
-👤 *Mehmon:* ${booking.first_name} ${booking.last_name}
+👤 *Mijoz:* ${booking.first_name} ${booking.last_name}
+📞 *Aloqa:* ${booking.phone}
 📧 *Email:* ${booking.email}
-📞 *Tel:* ${booking.phone}
+
 🛏 *Xona:* ${roomName}
-📅 *Kelish:* ${booking.check_in}
-📅 *Ketish:* ${booking.check_out}
-🌙 *Tunlar:* ${nights}
-👥 *Mehmonlar:* ${booking.guests}
-💰 *Narx:* $${booking.total_price}
-📝 *Izoh:* ${booking.special_requests || '—'}
-🆔 *Bron ID:* \`${booking.id}\`
+📅 *Sana:* ${booking.check_in} ➡️ ${booking.check_out}
+🌙 *Necha kecha:* ${nights} kecha
+👥 *Mehmonlar:* ${booking.guests} kishi
+💰 *Jami to'lov:* $${booking.total_price}
+📝 *Maxsus istak:* ${booking.special_requests || 'Yo\'q'}
+
+🆔 *ID:* \`${booking.id.slice(0,8).toUpperCase()}\`
+⚙️ *Status:* Kutilmoqda 🟡
   `.trim();
 
   const chatId  = process.env.TELEGRAM_CHAT_ID;
@@ -253,7 +269,7 @@ app.post('/api/bookings',
     body('first_name').trim().notEmpty().withMessage('Ism kiritilishi shart').isLength({ max: 80 }),
     body('last_name').trim().notEmpty().withMessage('Familiya kiritilishi shart').isLength({ max: 80 }),
     body('email').isEmail().normalizeEmail().withMessage('Email noto\'g\'ri'),
-    body('phone').trim().notEmpty().withMessage('Telefon kiritilishi shart').matches(/^[+\d\s\-()]{7,20}$/),
+    body('phone').trim().notEmpty().withMessage('Telefon kiritilishi shart').matches(/^[+\d\s\-()@A-Za-z0-9_]{5,30}$/), // Username va telefon uchun moslashtirildi
     body('check_in').isDate().withMessage('Kelish sanasi noto\'g\'ri'),
     body('check_out').isDate().withMessage('Ketish sanasi noto\'g\'ri'),
     body('room_type').isIn(['deluxe_king','luxury_twin','presidential','royal_penthouse']).withMessage('Noto\'g\'ri xona turi'),
@@ -290,7 +306,7 @@ app.post('/api/bookings',
 
     const booking = db.prepare('SELECT * FROM bookings WHERE id = ?').get(id);
 
-    // Async notifications (javobni kechiktirmaydi)
+    // Async notifications
     setImmediate(async () => {
       const telegramOk = await notifyTelegram(booking);
       const emailOk    = await sendConfirmationEmail(booking);
@@ -342,15 +358,13 @@ app.post('/api/contact',
   }
 );
 
-// ── POST /api/webhooks/unibot — Unibotdan kelgan webhook'larni qabul qilish
+// ── POST /api/webhooks/unibot
 app.post('/api/webhooks/unibot', (req, res) => {
   const signature = req.headers['x-unibot-signature'];
-  // TODO: signature validation qo'shing
   const payload = req.body;
   console.log('[Unibot Webhook]', JSON.stringify(payload));
   db.prepare('INSERT INTO webhook_logs (event_type,payload,status) VALUES (?,?,?)').run('unibot_incoming', JSON.stringify(payload), 'received');
 
-  // Hodisaga qarab amal bajarish
   if (payload.event === 'booking_confirmed' && payload.booking_id) {
     db.prepare("UPDATE bookings SET status='confirmed',updated_at=datetime('now') WHERE id=?").run(payload.booking_id);
   }
@@ -360,7 +374,7 @@ app.post('/api/webhooks/unibot', (req, res) => {
   res.json({ received: true });
 });
 
-// ── Admin API (Secret key talab qiladi)
+// ── Admin API
 const adminMiddleware = (req, res, next) => {
   const secret = req.headers['x-admin-secret'];
   if (!secret || secret !== process.env.ADMIN_SECRET) {
