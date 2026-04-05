@@ -3,161 +3,246 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>AURUM — Luxury Hotel</title>
+<title>AURUM — Premium Stay</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 
 <style>
 /* ═══════════════════════════════════════
-   DESIGN TOKENS & TELEGRAM THEME INTEGRATION
+   PREMIUM DESIGN TOKENS (Telegram Theme Aware)
 ═══════════════════════════════════════ */
 :root {
-  /* Asosiy ranglar Telegram theme'dan olinadi, agar bo'lmasa default ranglar ishlaydi */
-  --ink:       var(--tg-theme-text-color, #0c0b09);
-  --ink2:      var(--tg-theme-secondary-bg-color, #1a1814);
-  --paper:     var(--tg-theme-bg-color, #f6f2eb);
-  --paper2:    var(--tg-theme-secondary-bg-color, #ede8df);
-  --muted:     var(--tg-theme-hint-color, #8a8278);
-  --gold:      #b8953f;
-  --gold-pale: #e8d9b5;
-  --white:     var(--tg-theme-bg-color, #ffffff);
-  --radius:    8px;
-  --shadow:    0 2px 8px rgba(0,0,0,0.08);
+  --gold: #D4AF37;
+  --gold-dark: #AA8B2C;
+  --gold-light: #F9F1D8;
+  --bg-dark: var(--tg-theme-bg-color, #0a0a0a);
+  --bg-card: var(--tg-theme-secondary-bg-color, #141414);
+  --text-main: var(--tg-theme-text-color, #ffffff);
+  --text-muted: var(--tg-theme-hint-color, #a0a0a0);
+  --border-color: rgba(212, 175, 55, 0.2);
+  --radius-lg: 16px;
+  --radius-sm: 8px;
+  --transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 body {
-  font-family: 'Sora', sans-serif;
-  background: var(--paper);
-  color: var(--ink);
+  font-family: 'Montserrat', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
   line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
-.container { padding: 1.5rem; }
+/* ═══════════════════════════════════════
+   TYPOGRAPHY
+═══════════════════════════════════════ */
+h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 500; }
+.hero-title { font-size: 2.5rem; letter-spacing: 0.15em; text-align: center; margin-bottom: 0.5rem; color: var(--gold); }
+.hero-subtitle { font-size: 0.85rem; letter-spacing: 0.2em; text-align: center; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2rem; }
+.section-title { font-size: 1.5rem; margin-bottom: 1.5rem; padding-left: 1rem; border-left: 3px solid var(--gold); }
 
-/* Typography */
-.t-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 500; color: var(--ink); margin-bottom: 0.5rem; }
-.t-sub { font-size: 14px; color: var(--muted); font-weight: 300; margin-bottom: 1.5rem; }
-.t-tag { font-size: 11px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); }
+/* ═══════════════════════════════════════
+   HEADER & LANGUAGE SWITCHER
+═══════════════════════════════════════ */
+.header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.5rem;
+  background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+  position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px);
+}
+.logo-mini { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 600; letter-spacing: 2px; }
+.lang-switch { display: flex; gap: 8px; background: var(--bg-card); padding: 4px; border-radius: 20px; border: 1px solid var(--border-color); }
+.lang-btn {
+  background: transparent; border: none; color: var(--text-muted);
+  font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 16px;
+  cursor: pointer; transition: var(--transition);
+}
+.lang-btn.active { background: var(--gold); color: #000; }
 
-/* Rooms Grid (Mobile Optimized) */
-.rooms-grid { display: grid; gap: 1rem; margin-bottom: 2rem; }
+/* ═══════════════════════════════════════
+   ROOMS CAROUSEL (Horizontal Scroll)
+═══════════════════════════════════════ */
+.rooms-container {
+  display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+  gap: 1.5rem; padding: 0 1.5rem 2rem; scrollbar-width: none;
+}
+.rooms-container::-webkit-scrollbar { display: none; }
 .room-card {
-  background: var(--white);
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  border: 1px solid rgba(184,149,63,0.1);
+  min-width: 85%; flex-shrink: 0; scroll-snap-align: center;
+  background: var(--bg-card); border-radius: var(--radius-lg);
+  overflow: hidden; border: 1px solid var(--border-color);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  transition: transform 0.3s ease;
 }
-.rc-img {
-  height: 160px;
-  background: linear-gradient(135deg, #1c1a14, #0f0d0a);
-  display: flex; align-items: flex-end; padding: 1rem;
-  position: relative;
+.room-image-wrapper {
+  height: 220px; position: relative;
+  background: linear-gradient(135deg, #1c1a14 0%, #0f0d0a 100%);
+  display: flex; align-items: center; justify-content: center;
 }
-.rc-img::after { content: 'AURUM'; position: absolute; top:50%; left:50%; transform: translate(-50%,-50%); color: rgba(184,149,63,0.1); font-family: 'Playfair Display', serif; font-size: 3rem; font-style: italic; }
-.rc-body { padding: 1rem; }
-.rc-name { font-family: 'Playfair Display', serif; font-size: 1.2rem; margin-bottom: 0.3rem; }
-.rc-price { color: var(--gold); font-weight: 600; font-size: 1.1rem; }
-.rc-btn {
-  width: 100%; margin-top: 1rem; padding: 0.8rem;
+.room-image-wrapper::after {
+  content: 'AURUM'; position: absolute; font-family: 'Playfair Display', serif;
+  font-size: 4rem; color: rgba(212, 175, 55, 0.05); font-style: italic; pointer-events: none;
+}
+.room-badge {
+  position: absolute; top: 1rem; right: 1rem;
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+  color: var(--gold); font-size: 0.7rem; padding: 4px 10px;
+  border-radius: 20px; border: 1px solid var(--gold); letter-spacing: 1px; text-transform: uppercase;
+}
+.room-content { padding: 1.5rem; }
+.room-title { font-size: 1.4rem; margin-bottom: 0.5rem; }
+.room-desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.room-amenities { display: flex; gap: 10px; margin-bottom: 1.5rem; }
+.amenity-icon { font-size: 0.8rem; background: rgba(212, 175, 55, 0.1); padding: 4px 8px; border-radius: 4px; color: var(--gold); }
+.room-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; }
+.room-price-val { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--gold); }
+.room-price-sub { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
+.btn-select {
   background: transparent; border: 1px solid var(--gold); color: var(--gold);
-  border-radius: var(--radius); font-weight: 600; font-family: inherit;
+  padding: 0.6rem 1.5rem; border-radius: 30px; font-weight: 600; font-size: 0.85rem;
+  transition: var(--transition);
 }
+.btn-select:active { background: var(--gold); color: #000; }
 
-/* Booking Form */
-.form-card { background: var(--white); padding: 1.5rem; border-radius: var(--radius); box-shadow: var(--shadow); }
-.fg-group { margin-bottom: 1rem; display: flex; flex-direction: column; gap: 5px; }
-.fg-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; }
-.fg-input {
-  background: var(--paper); border: 1px solid var(--paper2);
-  color: var(--ink); padding: 0.9rem; font-size: 14px;
-  border-radius: var(--radius); outline: none; width: 100%;
-  font-family: inherit;
+/* ═══════════════════════════════════════
+   PREMIUM BOOKING FORM
+═══════════════════════════════════════ */
+.booking-section { padding: 2rem 1.5rem; display: none; opacity: 0; transform: translateY(20px); transition: var(--transition); }
+.booking-section.active { display: block; opacity: 1; transform: translateY(0); }
+.form-card { background: var(--bg-card); padding: 2rem; border-radius: var(--radius-lg); border: 1px solid var(--border-color); }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+.form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.2rem; }
+.form-group.full { grid-column: 1 / -1; }
+.form-label { font-size: 0.75rem; font-weight: 600; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; }
+.form-input {
+  background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text-main); padding: 1rem; font-size: 1rem; font-family: 'Montserrat', sans-serif;
+  border-radius: var(--radius-sm); outline: none; transition: var(--transition);
 }
-.fg-input:focus { border-color: var(--gold); }
-.btn-primary {
-  width: 100%; background: var(--gold); color: #fff; border: none;
-  padding: 1rem; font-size: 14px; font-weight: 600;
-  border-radius: var(--radius); text-transform: uppercase; letter-spacing: 0.05em;
+.form-input:focus { border-color: var(--gold); background: rgba(212, 175, 55, 0.05); }
+.form-input::placeholder { color: rgba(255,255,255,0.2); }
+select.form-input { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23D4AF37' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em; }
+select.form-input option { background: var(--bg-dark); color: #fff; }
+
+.price-breakdown {
+  background: rgba(212, 175, 55, 0.05); border-left: 3px solid var(--gold);
+  padding: 1.5rem; margin: 2rem 0; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
-.price-preview { background: rgba(184,149,63,0.1); padding: 1rem; border-radius: var(--radius); margin: 1rem 0; display: none; text-align: center; }
-.price-preview.show { display: block; }
-.pp-total { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--gold); font-weight: 600; }
+.pb-row { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem; }
+.pb-total { display: flex; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(212, 175, 55, 0.2); font-size: 1.2rem; font-weight: 600; color: var(--gold); }
+
+.btn-submit {
+  width: 100%; background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+  color: #000; border: none; padding: 1.2rem; font-size: 1rem; font-weight: 600;
+  border-radius: 30px; text-transform: uppercase; letter-spacing: 2px;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); transition: var(--transition);
+  display: flex; justify-content: center; align-items: center; gap: 10px;
+}
+.btn-submit:active { transform: scale(0.98); }
+.btn-submit:disabled { opacity: 0.7; filter: grayscale(100%); }
+
+/* Lottie Loader Overlay */
+#loader-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: var(--bg-dark); z-index: 999; display: flex;
+  flex-direction: column; justify-content: center; align-items: center;
+  transition: opacity 0.5s ease;
+}
+#lottie-logo { width: 150px; height: 150px; }
 </style>
 </head>
 <body>
 
-<div class="container">
-  <div style="text-align:center; margin-bottom: 2rem;">
-    <h1 style="font-family:'Playfair Display', serif; font-size:2rem; letter-spacing:0.2em;">AUR<span style="color:var(--gold);">U</span>M</h1>
-    <p style="font-size:12px; color:var(--muted); letter-spacing:0.1em;">LUXURY HOTEL</p>
+<div id="loader-overlay">
+  <div style="font-family:'Playfair Display',serif; font-size:3rem; color:var(--gold); letter-spacing:5px; animation: pulse 2s infinite;">AURUM</div>
+  <p style="color:var(--text-muted); font-size:0.8rem; letter-spacing:2px; margin-top:10px; text-transform:uppercase;" id="loader-text">Loading Excellence...</p>
+</div>
+
+<div class="header">
+  <div class="logo-mini">A<span style="color:var(--gold);">U</span>RUM</div>
+  <div class="lang-switch">
+    <button class="lang-btn active" onclick="changeLang('uz')">UZ</button>
+    <button class="lang-btn" onclick="changeLang('ru')">RU</button>
+    <button class="lang-btn" onclick="changeLang('en')">EN</button>
+  </div>
+</div>
+
+<div style="padding: 2rem 1.5rem 1rem;">
+  <h1 class="hero-title">Aurum Hotel</h1>
+  <p class="hero-subtitle" id="t-subtitle">The Art of Luxury</p>
+</div>
+
+<div class="rooms-container" id="roomsContainer">
   </div>
 
-  <h2 class="t-title">Xona tanlang</h2>
-  <p class="t-sub">Mini ilova orqali tezkor bron qiling.</p>
-
-  <div class="rooms-grid">
-    <div class="room-card">
-      <div class="rc-img"><span class="t-tag" style="color:#fff; z-index:10;">Deluxe King</span></div>
-      <div class="rc-body">
-        <div class="rc-name">Deluxe King Room</div>
-        <div class="rc-price">$280 / kecha</div>
-        <button class="rc-btn" onclick="selectRoom('deluxe_king')">Tanlash</button>
-      </div>
-    </div>
-    <div class="room-card">
-      <div class="rc-img"><span class="t-tag" style="color:#fff; z-index:10;">Twin Suite</span></div>
-      <div class="rc-body">
-        <div class="rc-name">Luxury Twin Suite</div>
-        <div class="rc-price">$420 / kecha</div>
-        <button class="rc-btn" onclick="selectRoom('luxury_twin')">Tanlash</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="form-card" id="bookingFormSection">
-    <h3 class="t-title" style="font-size:1.4rem; margin-bottom:1rem;">Bron ma'lumotlari</h3>
+<div class="booking-section" id="bookingSection">
+  <h2 class="section-title" id="t-book-title">Bron qilish</h2>
+  <div class="form-card">
     <form id="bookForm" onsubmit="submitBook(event)">
-      <div class="fg-group">
-        <label class="fg-label">Xona turi</label>
-        <select name="room_type" id="fi_room" class="fg-input" required>
-          <option value="" disabled selected>Xona tanlang...</option>
-          <option value="deluxe_king">Deluxe King Room ($280)</option>
-          <option value="luxury_twin">Luxury Twin Suite ($420)</option>
-          <option value="presidential">Presidential Suite ($1200)</option>
+      
+      <div class="form-group full">
+        <label class="form-label" id="t-lbl-room">Tanlangan xona</label>
+        <select name="room_type" id="fi_room" class="form-input" required>
+          <option value="deluxe_king">Deluxe King Room</option>
+          <option value="luxury_twin">Luxury Twin Suite</option>
+          <option value="presidential">Presidential Suite</option>
+          <option value="royal_penthouse">Royal Penthouse (VIP)</option>
         </select>
       </div>
-      
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-        <div class="fg-group">
-          <label class="fg-label">Kelish</label>
-          <input type="date" name="check_in" id="fi_checkin" class="fg-input" required>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" id="t-lbl-checkin">Kelish sanasi</label>
+          <input type="date" name="check_in" id="fi_checkin" class="form-input" required>
         </div>
-        <div class="fg-group">
-          <label class="fg-label">Ketish</label>
-          <input type="date" name="check_out" id="fi_checkout" class="fg-input" required>
+        <div class="form-group">
+          <label class="form-label" id="t-lbl-checkout">Ketish sanasi</label>
+          <input type="date" name="check_out" id="fi_checkout" class="form-input" required>
         </div>
       </div>
 
-      <div class="fg-group">
-        <label class="fg-label">Ism Familiya</label>
-        <input type="text" name="full_name" id="fi_name" class="fg-input" placeholder="Ismingiz" required>
-      </div>
-      <div class="fg-group">
-        <label class="fg-label">Telefon / Username</label>
-        <input type="text" name="phone" id="fi_phone" class="fg-input" placeholder="+998 90 123 45 67" required>
+      <div class="form-group full">
+        <label class="form-label" id="t-lbl-name">To'liq ismingiz</label>
+        <input type="text" name="full_name" id="fi_name" class="form-input" placeholder="Abdulla Oripov" required>
       </div>
 
-      <div class="price-preview" id="pricePreview">
-        <div style="font-size:12px; color:var(--muted);">Jami hisob:</div>
-        <div class="pp-total" id="ppTotal"></div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" id="t-lbl-phone">Telefon raqam</label>
+          <input type="tel" name="phone" id="fi_phone" class="form-input" placeholder="+998" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" id="t-lbl-guests">Mehmonlar soni</label>
+          <select name="guests" id="fi_guests" class="form-input">
+            <option value="1">1</option>
+            <option value="2" selected>2</option>
+            <option value="3">3</option>
+            <option value="4">4+</option>
+          </select>
+        </div>
       </div>
 
-      <button type="submit" class="btn-primary" id="bookBtn">Tasdiqlash</button>
+      <div class="form-group full">
+        <label class="form-label" id="t-lbl-request">Maxsus istaklar (ixtiyoriy)</label>
+        <input type="text" name="special_requests" id="fi_request" class="form-input" placeholder="Transfer, gullar, kechki ovqat...">
+      </div>
+
+      <div class="price-breakdown" id="pricePreview">
+        <div class="pb-row"><span id="t-pb-nights">Kecha:</span> <span id="ppNights">-</span></div>
+        <div class="pb-row"><span id="t-pb-tax">Soliq va yig'imlar:</span> <span>Kiritilgan</span></div>
+        <div class="pb-total"><span id="t-pb-total">Jami:</span> <span id="ppTotal">$0</span></div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="bookBtn">
+        <span id="t-btn-confirm">Bronni Tasdiqlash</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </button>
     </form>
   </div>
 </div>
@@ -168,69 +253,236 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 tg.ready();
 
-// Auto-fill user data from Telegram
-if(tg.initDataUnsafe?.user) {
+// Apply Telegram theme colors if available, otherwise fallback to luxury dark
+if(tg.themeParams.bg_color) {
+    document.documentElement.style.setProperty('--bg-dark', tg.themeParams.bg_color);
+    document.documentElement.style.setProperty('--bg-card', tg.themeParams.secondary_bg_color || '#141414');
+    document.documentElement.style.setProperty('--text-main', tg.themeParams.text_color || '#ffffff');
+    document.documentElement.style.setProperty('--text-muted', tg.themeParams.hint_color || '#a0a0a0');
+}
+
+// ── CONFIG & DATA ──
+// MUHIM: Shu yerga Botingiz backend manzilini qo'yasiz. Hozircha bo'sh qoldiring, Node.js server ishga tushgach yozamiz.
+const API_BASE = 'https://sizning-backend-domeningiz.onrender.com'; 
+
+const ROOM_DATA = {
+  deluxe_king: { price: 280, max_guests: 2 },
+  luxury_twin: { price: 420, max_guests: 3 },
+  presidential: { price: 1200, max_guests: 4 },
+  royal_penthouse: { price: 2500, max_guests: 6 }
+};
+
+// ── MULTI-LANGUAGE DICTIONARY ──
+const i18n = {
+  uz: {
+    subtitle: "Hashamat San'ati", bookTitle: "Bron Qilish",
+    rooms: {
+      deluxe_king: { name: "Deluxe King Room", desc: "Panoramik oyna va shahar manzarasi. King size yotoq va marmar vanna.", badge: "Ommabop", am: ["WiFi", "Mini Bar", "TV"] },
+      luxury_twin: { name: "Luxury Twin Suite", desc: "Keng yashash zali va ikkita alohida premium yotoq.", badge: "Oila uchun", am: ["WiFi", "Lounge", "Spa"] },
+      presidential: { name: "Presidential Suite", desc: "3 xonali to'liq jihozlangan suite. Shaxsiy butler xizmati.", badge: "Premium", am: ["Butler", "Bar", "View"] },
+      royal_penthouse: { name: "Royal Penthouse", desc: "Toshkentning eng yuqori nuqtasi. Shaxsiy hovuz va vertolyot transferi.", badge: "VIP", am: ["Pool", "Helicopter", "Chef"] }
+    },
+    lblRoom: "Tanlangan xona", lblCheckin: "Kelish sanasi", lblCheckout: "Ketish sanasi",
+    lblName: "To'liq ismingiz", lblPhone: "Telefon raqam", lblGuests: "Mehmonlar",
+    lblRequest: "Maxsus istaklar (ixtiyoriy)", reqPlaceholder: "Transfer, gullar...",
+    pbNights: "Kecha:", pbTax: "Soliq va yig'imlar:", pbTotal: "Jami to'lov:",
+    btnConfirm: "Tasdiqlash", btnSelect: "Tanlash", night: "/ kecha"
+  },
+  ru: {
+    subtitle: "Искусство Роскоши", bookTitle: "Бронирование",
+    rooms: {
+      deluxe_king: { name: "Deluxe King Room", desc: "Панорамные окна и вид на город. Кровать King size и мраморная ванна.", badge: "Популярный", am: ["WiFi", "Мини-бар", "ТВ"] },
+      luxury_twin: { name: "Luxury Twin Suite", desc: "Просторная гостиная и две отдельные кровати премиум-класса.", badge: "Для семьи", am: ["WiFi", "Лаунж", "Спа"] },
+      presidential: { name: "Presidential Suite", desc: "3-комнатный люкс. Услуги личного дворецкого.", badge: "Премиум", am: ["Дворецкий", "Бар", "Вид"] },
+      royal_penthouse: { name: "Royal Penthouse", desc: "Высшая точка Ташкента. Личный бассейн и трансфер на вертолете.", badge: "VIP", am: ["Бассейн", "Вертолет", "Шеф"] }
+    },
+    lblRoom: "Выбранный номер", lblCheckin: "Дата заезда", lblCheckout: "Дата выезда",
+    lblName: "Полное имя", lblPhone: "Номер телефона", lblGuests: "Гости",
+    lblRequest: "Особые пожелания (необязательно)", reqPlaceholder: "Трансфер, цветы...",
+    pbNights: "Ночей:", pbTax: "Налоги и сборы:", pbTotal: "Итого:",
+    btnConfirm: "Подтвердить", btnSelect: "Выбрать", night: "/ ночь"
+  },
+  en: {
+    subtitle: "The Art of Luxury", bookTitle: "Reservation",
+    rooms: {
+      deluxe_king: { name: "Deluxe King Room", desc: "Panoramic windows with city views. King size bed and marble bath.", badge: "Popular", am: ["WiFi", "Mini Bar", "TV"] },
+      luxury_twin: { name: "Luxury Twin Suite", desc: "Spacious living room and two separate premium beds.", badge: "Family", am: ["WiFi", "Lounge", "Spa"] },
+      presidential: { name: "Presidential Suite", desc: "3-room fully equipped suite. Personal butler service.", badge: "Premium", am: ["Butler", "Bar", "View"] },
+      royal_penthouse: { name: "Royal Penthouse", desc: "Highest point in Tashkent. Private pool and helicopter transfer.", badge: "VIP", am: ["Pool", "Helicopter", "Chef"] }
+    },
+    lblRoom: "Selected Room", lblCheckin: "Check-in Date", lblCheckout: "Check-out Date",
+    lblName: "Full Name", lblPhone: "Phone Number", lblGuests: "Guests",
+    lblRequest: "Special Requests (Optional)", reqPlaceholder: "Transfer, flowers...",
+    pbNights: "Nights:", pbTax: "Taxes & Fees:", pbTotal: "Total:",
+    btnConfirm: "Confirm Booking", btnSelect: "Select", night: "/ night"
+  }
+};
+
+let currentLang = 'uz';
+
+// ── INITIALIZATION ──
+window.onload = () => {
+  setTimeout(() => {
+    document.getElementById('loader-overlay').style.opacity = '0';
+    setTimeout(() => document.getElementById('loader-overlay').style.display = 'none', 500);
+  }, 1000);
+
+  // Auto-fill from Telegram
+  if(tg.initDataUnsafe?.user) {
     const user = tg.initDataUnsafe.user;
     document.getElementById('fi_name').value = `${user.first_name || ''} ${user.last_name || ''}`.trim();
-    document.getElementById('fi_phone').value = user.username ? `@${user.username}` : '';
+    if(user.username) document.getElementById('fi_request').value = `TG: @${user.username}`;
+  }
+
+  // Date constraints
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('fi_checkin').min = today;
+  document.getElementById('fi_checkin').value = today;
+  
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  document.getElementById('fi_checkout').min = tomorrow.toISOString().split('T')[0];
+  document.getElementById('fi_checkout').value = tomorrow.toISOString().split('T')[0];
+
+  renderRooms();
+  applyLanguage();
+  updatePricePreview();
+};
+
+// ── UTILS & LOGIC ──
+function triggerHaptic() { if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light'); }
+document.querySelectorAll('input, select').forEach(el => el.addEventListener('click', triggerHaptic));
+
+function changeLang(lang) {
+  triggerHaptic();
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  applyLanguage();
+  renderRooms(); // Re-render cards with new text
 }
 
-// ── CONFIG ──
-// DIQQAT: O'zingizning backend serveringiz URL manzilini shu yerga yozing!
-const API_BASE = 'https://sizning-backend-domeningiz.com'; 
-const PRICES = { deluxe_king:280, luxury_twin:420, presidential:1200 };
-
-const today = new Date().toISOString().split('T')[0];
-document.getElementById('fi_checkin').min = today;
-
-function triggerHaptic() {
-    if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+function applyLanguage() {
+  const dict = i18n[currentLang];
+  document.getElementById('t-subtitle').innerText = dict.subtitle;
+  document.getElementById('t-book-title').innerText = dict.bookTitle;
+  document.getElementById('t-lbl-room').innerText = dict.lblRoom;
+  document.getElementById('t-lbl-checkin').innerText = dict.lblCheckin;
+  document.getElementById('t-lbl-checkout').innerText = dict.lblCheckout;
+  document.getElementById('t-lbl-name').innerText = dict.lblName;
+  document.getElementById('t-lbl-phone').innerText = dict.lblPhone;
+  document.getElementById('t-lbl-guests').innerText = dict.lblGuests;
+  document.getElementById('t-lbl-request').innerText = dict.lblRequest;
+  document.getElementById('fi_request').placeholder = dict.reqPlaceholder;
+  document.getElementById('t-pb-nights').innerText = dict.pbNights;
+  document.getElementById('t-pb-tax').innerText = dict.pbTax;
+  document.getElementById('t-pb-total').innerText = dict.pbTotal;
+  document.getElementById('t-btn-confirm').innerText = dict.btnConfirm;
+  updatePricePreview(); // Update 'nights' text
 }
 
-document.querySelectorAll('button, select, input').forEach(el => {
-    el.addEventListener('click', triggerHaptic);
-});
+function renderRooms() {
+  const container = document.getElementById('roomsContainer');
+  container.innerHTML = '';
+  const dict = i18n[currentLang].rooms;
+
+  Object.keys(ROOM_DATA).forEach(key => {
+    const data = ROOM_DATA[key];
+    const text = dict[key];
+    
+    let amHtml = text.am.map(a => `<span class="amenity-icon">${a}</span>`).join('');
+
+    const html = `
+      <div class="room-card">
+        <div class="room-image-wrapper">
+          <div class="room-badge">${text.badge}</div>
+        </div>
+        <div class="room-content">
+          <h3 class="room-title">${text.name}</h3>
+          <p class="room-desc">${text.desc}</p>
+          <div class="room-amenities">${amHtml}</div>
+          <div class="room-footer">
+            <div>
+              <div class="room-price-val">$${data.price}</div>
+              <div class="room-price-sub">${i18n[currentLang].night}</div>
+            </div>
+            <button class="btn-select" onclick="selectRoom('${key}')">${i18n[currentLang].btnSelect}</button>
+          </div>
+        </div>
+      </div>
+    `;
+    container.innerHTML += html;
+  });
+}
 
 function selectRoom(type) {
+  triggerHaptic();
   document.getElementById('fi_room').value = type;
-  document.getElementById('bookingFormSection').scrollIntoView({ behavior: 'smooth' });
+  const section = document.getElementById('bookingSection');
+  section.classList.add('active');
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
   updatePricePreview();
 }
 
 ['fi_checkin', 'fi_checkout', 'fi_room'].forEach(id => {
-  document.getElementById(id).addEventListener('change', updatePricePreview);
+  document.getElementById(id).addEventListener('change', () => {
+    if(id === 'fi_checkin') {
+      const ci = new Date(document.getElementById('fi_checkin').value);
+      ci.setDate(ci.getDate() + 1);
+      const coInput = document.getElementById('fi_checkout');
+      coInput.min = ci.toISOString().split('T')[0];
+      if(new Date(coInput.value) <= new Date(document.getElementById('fi_checkin').value)){
+        coInput.value = ci.toISOString().split('T')[0];
+      }
+    }
+    updatePricePreview();
+  });
 });
 
 function updatePricePreview() {
   const ci = document.getElementById('fi_checkin').value;
   const co = document.getElementById('fi_checkout').value;
   const rt = document.getElementById('fi_room').value;
-  const prev = document.getElementById('pricePreview');
   
-  if (!ci || !co || !rt) { prev.classList.remove('show'); return; }
+  if (!ci || !co || !rt) return;
   
   const nights = Math.max(1, Math.round((new Date(co)-new Date(ci))/(86400000)));
-  const total  = (PRICES[rt]||0) * nights;
+  const total  = (ROOM_DATA[rt].price || 0) * nights;
   
+  document.getElementById('ppNights').textContent = nights;
   document.getElementById('ppTotal').textContent = `$${total.toLocaleString()}`;
-  prev.classList.add('show');
+  
+  // Update guests max based on room
+  const gInput = document.getElementById('fi_guests');
+  const oldVal = parseInt(gInput.value);
+  const max = ROOM_DATA[rt].max_guests;
+  gInput.innerHTML = '';
+  for(let i=1; i<=max; i++) {
+    gInput.innerHTML += `<option value="${i}">${i}</option>`;
+  }
+  gInput.value = oldVal <= max ? oldVal : max;
 }
 
+// ── FORM SUBMISSION (INTEGRATION) ──
 async function submitBook(e) {
   e.preventDefault();
   triggerHaptic();
   
   const form = e.target;
   const btn = document.getElementById('bookBtn');
+  const btnText = document.getElementById('t-btn-confirm');
+  const originalText = btnText.innerText;
   const data = Object.fromEntries(new FormData(form));
   
-  // Ism va familiyani ajratish (backend kutgan format uchun)
   const nameParts = data.full_name.split(' ');
   data.first_name = nameParts[0] || 'Unknown';
   data.last_name = nameParts.slice(1).join(' ') || '';
-  data.email = data.phone.includes('@') ? `${data.phone.replace('@','')}@telegram.uz` : 'telegram@user.uz'; // Default email agar yo'q bo'lsa
+  
+  // Telegram ID ni ham yuboramiz (bot uchun muhim)
+  data.tg_id = tg.initDataUnsafe?.user?.id || '';
+  data.email = 'tg@aurum.uz'; // placeholder for DB
 
-  btn.textContent = 'Yuborilmoqda...';
+  btnText.innerText = '...';
   btn.disabled = true;
 
   try {
@@ -243,22 +495,30 @@ async function submitBook(e) {
     const result = await resp.json();
 
     if (result.success) {
-      tg.showAlert("Tabriklaymiz! Xona muvaffaqiyatli band qilindi. Menejerimiz tez orada aloqaga chiqadi.");
       tg.HapticFeedback.notificationOccurred('success');
-      setTimeout(() => tg.close(), 3000); // Mini appni yopish
+      tg.showAlert(currentLang === 'uz' ? "Bron muvaffaqiyatli qabul qilindi! Menejerimiz tez orada aloqaga chiqadi." : "Booking successful! Our manager will contact you shortly.");
+      
+      // Ma'lumotlarni asosiy Telegram chatga (Botga) yuborish
+      tg.sendData(JSON.stringify({
+        action: "booking_success",
+        booking_id: result.data.booking_id,
+        amount: result.data.total_price
+      }));
+      
     } else {
-      tg.showAlert("Xatolik: " + (result.message || "Ma'lumotlarni tekshiring"));
       tg.HapticFeedback.notificationOccurred('error');
-      btn.textContent = 'Tasdiqlash';
+      tg.showAlert("Xatolik: " + result.message);
+      btnText.innerText = originalText;
       btn.disabled = false;
     }
   } catch(error) {
-     tg.showAlert("Server bilan bog'lanishda xatolik yuz berdi. Iltimos keyinroq urinib ko'ring.");
      tg.HapticFeedback.notificationOccurred('error');
-     btn.textContent = 'Tasdiqlash';
+     tg.showAlert(currentLang === 'uz' ? "Tarmoq xatosi. Keyinroq urinib ko'ring." : "Network error. Try again.");
+     btnText.innerText = originalText;
      btn.disabled = false;
   }
 }
 </script>
+<style>@keyframes pulse { 0% {opacity:1;} 50% {opacity:0.5;} 100% {opacity:1;} }</style>
 </body>
 </html>
